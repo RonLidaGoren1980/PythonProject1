@@ -1,6 +1,7 @@
 import json, sys
 from psycopg2 import connect, Error
 import requests
+from psycopg2.extras import Json
 
 
 url = 'https://raw.githubusercontent.com/RonLidaGoren1980/PythonProject1/master/AWInternetsalesAnalysis.json'
@@ -33,7 +34,7 @@ for i, record in enumerate(values):
     # append each value to a new list of values
     for v, val in enumerate(record):
         if type(val) == str:
-            val = str(json(val)).replace('"', '')
+            val = str(Json(val)).replace('"', '')
         val_list += [str(val)]
 
     # put parenthesis around each record string
