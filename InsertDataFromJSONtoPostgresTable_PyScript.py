@@ -1,8 +1,27 @@
 import json, sys
+import psycopg2
 from psycopg2 import connect, Error
 import requests
 from psycopg2.extras import Json
 
+try:
+    connection = psycopg2.connect(user="postgres",
+                                  password="postgres",
+                                  host="127.0.0.1",
+                                  port="5432",
+                                  database="newproject1")
+
+    cursor = connection.cursor()
+    # Print PostgreSQL Connection properties
+    print(connection.get_dsn_parameters(), "\n")
+
+    # Print PostgreSQL version
+    cursor.execute("SELECT version();")
+    record = cursor.fetchone()
+    print("You are connected to - ", record, "\n")
+
+except (Exception, psycopg2.Error) as error:
+    print("Error while connecting to PostgreSQL", error)
 
 url = 'https://raw.githubusercontent.com/RonLidaGoren1980/PythonProject1/master/AWInternetsalesAnalysis.json'
 resp = requests.get(url)
@@ -24,6 +43,8 @@ for i, data_dict in enumerate(data):
     values = [list(x.values()) for x in data]
 # value string for the SQL string
 values_str = ""
+# print(values)
+
 
 # enumerate over the records' values
 for i, record in enumerate(values):
@@ -50,5 +71,20 @@ sql_string = "INSERT INTO %s (%s)\nVALUES %s" % (
     ', '.join(columns),
     values_str
 )
-print("\nSQL statement:")
-print(sql_string)
+# print("\nSQL statement:")
+# print(sql_string)
+if cursor != None:
+
+    try:
+        cursor.execute(sql_string)
+        connection.commit()
+
+        print('\nfinished INSERT INTO execution')
+
+    except (Exception, Error) as error:
+        print("\nexecute_sql() error:", error)
+        connection.rollback()
+
+    # close the cursor and connection
+    cursor.close()
+    connection.close()
